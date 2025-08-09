@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Spotify Redirect</title>
+</head>
+<body>
+  <h1>認証が完了しました！</h1>
+  <p>このページはSpotify APIの認証後に戻ってくる場所です。</p>
+  <script>
+    // 認証コードをURLから取得して表示（デバッグ用）
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('code')) {
+      document.write('<p>Authorization Code: ' + params.get('code') + '</p>');
+    }
+  </script>
+</body>
+</html>
