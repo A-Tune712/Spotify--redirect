@@ -1,26 +1,22 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Spotify Redirect</title>
-</head>
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Debug Redirect</title></head>
 <body>
-  <p>認証完了。アプリに戻っています…</p>
-  <script>
-    // ハッシュからトークン取得（implicit grant）
-    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-    const token = hash.get('access_token');
-    const expiresIn = parseInt(hash.get('expires_in') || '3600', 10);
-    if (token) {
-      const expireAt = Date.now() + (expiresIn * 1000);
-      // 同一ドメイン（a-tune712.github.io）なので両ページで共有できる
-      localStorage.setItem('spotify_access_token', token);
-      localStorage.setItem('spotify_token_expire_at', String(expireAt));
-      // あなたの再生ページへ戻す（必要なら #autoplay など付けてもOK）
-      location.replace('https://a-tune712.github.io/Spotify-A/');
-    } else {
-      document.body.innerHTML = '<p>トークンが受け取れませんでした。</p>';
-    }
-  </script>
-</body>
-</html>
+  <h2>認証結果デバッグ</h2>
+  <pre id="dbg" style="white-space:pre-wrap"></pre>
+<script>
+  const hash   = location.hash;
+  const search = location.search;
+  const hp = new URLSearchParams(hash.replace(/^#/,''));
+  const qp = new URLSearchParams(search);
+  const token = hp.get('access_token');
+  const code  = qp.get('code');
+
+  document.getElementById('dbg').textContent =
+    'href:   ' + location.href + '\n' +
+    'hash:   ' + hash + '\n' +
+    'search: ' + search + '\n' +
+    'access_token: ' + (token ? '(取得OK)' : 'なし') + '\n' +
+    'code:        ' + (code  || 'なし');
+
+  // ここでは自動遷移はしない（状況確認優先）
+</script>
+</body></html>
