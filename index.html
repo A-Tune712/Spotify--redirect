@@ -1,22 +1,49 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><title>Debug Redirect</title></head>
-<body>
-  <h2>認証結果デバッグ</h2>
-  <pre id="dbg" style="white-space:pre-wrap"></pre>
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Spotify Redirect</title></head>
+<body><p>認証処理中…</p>
 <script>
-  const hash   = location.hash;
-  const search = location.search;
-  const hp = new URLSearchParams(hash.replace(/^#/,''));
-  const qp = new URLSearchParams(search);
-  const token = hp.get('access_token');
-  const code  = qp.get('code');
+const params = new URLSearchParams(location.search);
+const code = params.get('code');
+const verifier = localStorage.getItem('spotify_pkce_verifier');
+const CLIENT_ID = "9892d015f2734e85a98e291efff7396d";
+const REDIRECT_URI = "https://a-tune712.github.io/Spotify--redirect/";
 
-  document.getElementById('dbg').textContent =
-    'href:   ' + location.href + '\n' +
-    'hash:   ' + hash + '\n' +
-    'search: ' + search + '\n' +
-    'access_token: ' + (token ? '(取得OK)' : 'なし') + '\n' +
-    'code:        ' + (code  || 'なし');
+async function exchange() {
+  if (!code || !verifier) {
+    document.body.innerHTML = "<p>code または verifier がありません。</p>";
+    return;
+  }
+  const body = new URLSearchParams({
+    grant_type: "authorization_code",
+    code,
+    redirect_uri: REDIRECT_URI,
+    client_id: CLIENT_ID,
+    code_verifier: verifier
+  });
 
-  // ここでは自動遷移はしない（状況確認優先）
+  const res = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
+    headers: {"Content-Type": "application/x-www-form-urlencoded"},
+    body
+  });
+
+  if (!res.ok) {
+    const t = await res.text();
+    document.body.innerHTML = "<pre>トークン交換エラー:\n" + res.status + "\n" + t + "</pre>";
+    return;
+  }
+
+  const json = await res.json();
+  const token = json.access_token;
+  const expiresIn = json.expires_in || 3600;
+  const expireAt = Date.now() + expiresIn*1000;
+
+  localStorage.setItem("spotify_access_token", token);
+  localStorage.setItem("spotify_token_expire_at", String(expireAt));
+
+  // 再生ページへ
+  location.replace("https://a-tune712.github.io/Spotify-A/");
+}
+
+exchange();
 </script>
 </body></html>
